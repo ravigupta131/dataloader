@@ -1,0 +1,16 @@
+batch_size=512
+transform = transforms.Compose([transforms.ToTensor()])
+train_dataset = FhistDataset(path='/home/ravi/Domain_adap_code/data_source_train.csv', transforms=transform)
+source_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=False)
+def get_mean_std(loader):
+  channels_sum, channels_square_sum, num_batches = 0, 0, 0
+  for data, _ in loader:
+    channels_sum += torch.mean(data.type(torch.FloatTensor), dim = [0,2,3])
+    channels_square_sum += torch.mean(data.type(torch.FloatTensor)**2, dim = [0,2,3])
+    num_batches += 1
+
+  mean = channels_sum/num_batches
+  std = (channels_square_sum/num_batches - mean**2)**0.5
+  return mean, std
+mean, std = get_mean_std(source_loader)
+print(mean, std)     
